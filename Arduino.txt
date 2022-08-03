@@ -1,0 +1,207 @@
+#include <Stepper.h>
+#define STEPS 64
+Stepper stepper(STEPS,10,11,12,13);
+int Pv=0;
+int flrO=0;
+int flrT=0;
+int flrTr=0;
+int vall=0;
+int EMS;
+const int ALARM=A4;
+const int LED1=A3;
+const int LED2=A2;
+const int LED3=A1;
+const int analogInput=A5;
+bool floor1=false;
+bool floor2=false;
+bool floor3=false;
+#define trigPin 9
+#define echoPin 8
+double duration, distance, ultrasonic;
+char data;
+String SerialData="";
+void goingUp();
+void goingDown();
+void setup() {
+  // put your setup code here, to run once:
+Serial.begin(9600);
+stepper.setSpeed(400);
+pinMode(trigPin,OUTPUT);
+pinMode(echoPin,INPUT);
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  analogWrite(ALARM,0);
+  EMS=digitalRead(5);
+vall=analogRead(analogInput);
+  if(Serial.available())
+  {
+    int val=Serial.read();
+    if(val==1)
+    {
+      flrO+=1;
+    }
+    if(val==2)
+    {
+      flrT+=1;
+    }
+    if(val==3)
+    {
+      flrTr+=1;
+    }
+  }
+int flr2B=digitalRead(3);
+int flr3B=digitalRead(4);
+int flr1B=digitalRead(2);
+if(flr2B==1)
+{
+flrT+=1;
+}
+if(flr1B==1)
+{
+flrO+=1;
+}
+if(flr3B==1)
+{
+flrTr+=1;
+}
+digitalWrite(trigPin,LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin,HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin,LOW);
+
+  duration=pulseIn(echoPin,HIGH);
+  distance=(duration/2)/29.1;
+ // pulseIn(echoPin,LOW);
+  // put your main code here, to run repeatedly:
+  Serial.println(vall);
+ Serial.println(distance);
+ delayMicroseconds(15);
+if(floor1==true)
+{
+  analogWrite(LED1,254);
+  analogWrite(LED2,0);
+  analogWrite(LED3,0);
+}
+if(floor2==true)
+{
+  analogWrite(LED1,0);
+  analogWrite(LED2,254);
+  analogWrite(LED3,0);
+}
+if(floor3==true)
+{
+  analogWrite(LED1,0);
+  analogWrite(LED2,0);
+  analogWrite(LED3,254);
+}
+if(EMS==1)
+{
+   if(floor3==true&&EMS==1)
+   {
+    analogWrite(LED3,0);
+    delay(250);
+    analogWrite(LED3,254);
+    delay(250);
+   }
+   if(floor2==true&&EMS==1)
+   {
+    analogWrite(LED2,0);
+    delay(250);
+    analogWrite(LED2,254);
+    delay(250);
+   }
+   if(floor1==true&&EMS==1)
+   {
+    analogWrite(LED1,0);
+    delay(250);
+    analogWrite(LED1,254);
+    delay(250);
+   }
+}
+ if(vall<975)
+  {
+    analogWrite(ALARM,254);
+    delay(250);
+    
+    analogWrite(ALARM,254);
+    delay(250);
+  }
+if(EMS==0&&vall>=975)
+{
+  analogWrite(ALARM,0);
+  if(flrT>=1)
+{
+  if(distance>9.05)
+  {
+    goingDown();
+  }
+  if(distance<9.05)
+  {
+    goingUp();
+  }
+  if(distance>9.07&&distance<9.08)
+  {
+      analogWrite(LED1,0);
+  analogWrite(LED2,254);
+  analogWrite(LED3,0);
+    floor1=false;
+    floor2=true;
+    floor3=false;
+    delay(5000);
+    flrT=0;
+  }
+}
+if(flrO>=1)
+{
+  if(distance>3.00)
+  {
+    goingDown();
+  }
+  if(distance<3.00)
+  {
+    goingUp();
+  }
+  if(distance>3.00&&distance<3.05)
+  {
+      analogWrite(LED1,254);
+  analogWrite(LED2,0);
+  analogWrite(LED3,0);
+    floor1=true;
+    floor2=false;
+    floor3=false;
+    delay(5000);
+    flrO=0;
+  }
+}
+  if(flrTr>=1)
+{
+  if(distance<18.10)
+  {
+    goingUp();
+  }
+  if(distance>18.10&&distance<18.15)
+  {
+      analogWrite(LED1,0);
+  analogWrite(LED2,0);
+  analogWrite(LED3,254);
+    floor1=false;
+    floor2=false;
+    floor3=true;
+    delay(5000);
+    flrTr=0;
+  }
+}
+}
+}
+void goingUp()
+{
+  stepper.step(2);
+}
+void goingDown()
+{
+  stepper.step(-2);
+}

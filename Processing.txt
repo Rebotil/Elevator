@@ -1,0 +1,66 @@
+Processing code:
+import processing.serial.*;
+float x,y,z;
+import controlP5.*;
+ControlP5 cp5;
+Serial myPort;
+//Pfont font;
+void setup()
+{
+  size(800,500);
+  myPort=new Serial(this,"COM3",9600);
+  cp5 =new ControlP5(this);
+ // font= createFont("Georgia Bold",20);
+// translate(150,50);
+ cp5.addButton("ONE")
+    .setPosition(150,50)
+    .setSize(200,100)
+    ;
+    
+    cp5.addButton("TWO")
+    .setPosition(150,200)
+    .setSize(200,100)
+    .setColorBackground(color(0,0,0))
+    .setColorForeground(color(136,7,224))
+    .setColorLabel(color(255,255,255))
+    ;
+    
+    cp5.addButton("THREE")
+    .setPosition(150,350)
+    .setSize(200,100)
+    ;
+    y=0.00;
+}
+void draw()
+{
+  background(255,0,255);
+  float val=myPort.read();
+ // val=val-2.05;
+   rect(400,60,150,70);
+  if(val<3.05&&val>3.00)
+  {
+ fill(255,0,0);
+ 
+  }
+  if(val<10.00&&val>10.05)
+  {
+ fill(0,255,0);
+  }
+  if(val<17.80&&val>18.85)
+  {
+  fill(0,0,255);
+
+  }
+}
+void ONE()
+{
+  myPort.write(1);
+}
+void TWO()
+{
+  myPort.write(2);
+}
+void THREE()
+{
+  myPort.write(3);
+}
